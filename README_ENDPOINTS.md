@@ -146,3 +146,128 @@ Metodo: `GET`
 URL: `{{base_url}}/api/v1/users/by-role/{{roleName}}`
 Headers:
 - `Authorization: Bearer {{token}}`
+
+---
+
+## Opiniones (MongoDB)
+
+### 11) Crear Opinion
+
+Metodo: `POST`
+URL: `{{base_url}}/api/v1/opinions`
+Headers:
+- `Content-Type: application/json`
+- `Authorization: Bearer {{token}}`
+Body (raw JSON):
+
+```json
+{
+  "title": "Mi opinion sobre tecnologia",
+  "category": "Tecnologia",
+  "content": "Creo que la tecnologia ha cambiado nuestras vidas..."
+}
+```
+
+### 12) Obtener Opiniones
+
+Metodo: `GET`
+URL: `{{base_url}}/api/v1/opinions?page=1&limit=10`
+Query params opcionales:
+- `page` (numero de pagina)
+- `limit` (cantidad por pagina)
+- `category` (filtrar por categoria)
+- `authorId` (filtrar por autor)
+
+### 13) Obtener Opinion por ID
+
+Metodo: `GET`
+URL: `{{base_url}}/api/v1/opinions/{{opinionId}}`
+
+### 14) Actualizar Opinion (solo autor)
+
+Metodo: `PUT`
+URL: `{{base_url}}/api/v1/opinions/{{opinionId}}`
+Headers:
+- `Content-Type: application/json`
+- `Authorization: Bearer {{token}}`
+Body (raw JSON):
+
+```json
+{
+  "title": "Titulo actualizado",
+  "category": "Nueva categoria",
+  "content": "Contenido actualizado..."
+}
+```
+
+### 15) Eliminar Opinion (solo autor)
+
+Metodo: `DELETE`
+URL: `{{base_url}}/api/v1/opinions/{{opinionId}}`
+Headers:
+- `Authorization: Bearer {{token}}`
+
+---
+
+## Comentarios (MongoDB)
+
+### 16) Crear Comentario
+
+Metodo: `POST`
+URL: `{{base_url}}/api/v1/comments`
+Headers:
+- `Content-Type: application/json`
+- `Authorization: Bearer {{token}}`
+Body (raw JSON):
+
+```json
+{
+  "opinionId": "OPINION_ID_AQUI",
+  "content": "Estoy de acuerdo con tu opinion..."
+}
+```
+
+### 17) Obtener Comentarios de una Opinion
+
+Metodo: `GET`
+URL: `{{base_url}}/api/v1/comments/opinion/{{opinionId}}?page=1&limit=20`
+Query params opcionales:
+- `page` (numero de pagina)
+- `limit` (cantidad por pagina)
+
+### 18) Obtener Comentario por ID
+
+Metodo: `GET`
+URL: `{{base_url}}/api/v1/comments/{{commentId}}`
+
+### 19) Actualizar Comentario (solo autor)
+
+Metodo: `PUT`
+URL: `{{base_url}}/api/v1/comments/{{commentId}}`
+Headers:
+- `Content-Type: application/json`
+- `Authorization: Bearer {{token}}`
+Body (raw JSON):
+
+```json
+{
+  "content": "Comentario actualizado..."
+}
+```
+
+### 20) Eliminar Comentario (solo autor)
+
+Metodo: `DELETE`
+URL: `{{base_url}}/api/v1/comments/{{commentId}}`
+Headers:
+- `Authorization: Bearer {{token}}`
+
+---
+
+## Notas importantes
+
+- Las opiniones y comentarios se almacenan en **MongoDB**.
+- Los usuarios se autentican con **PostgreSQL** (JWT).
+- Solo el **autor** puede editar o eliminar sus propias opiniones/comentarios.
+- Las eliminaciones son **soft delete** (marcan `isActive: false`).
+- Todos los endpoints de opiniones/comentarios requieren token JWT valido (excepto GET publicos).

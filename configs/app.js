@@ -5,6 +5,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { dbConnection } from './db.js';
+import { connectMongoDB } from './mongodb.js';
 // Ensure models are registered before DB sync
 import '../src/users/user.model.js';
 import '../src/auth/role.model.js';
@@ -17,6 +18,8 @@ import {
 } from '../middlewares/server-genericError-handler.js';
 import authRoutes from '../src/auth/auth.routes.js';
 import userRoutes from '../src/users/user.routes.js';
+import opinionRoutes from '../src/opinions/opinion.routes.js';
+import commentRoutes from '../src/comments/comment.routes.js';
 import { ensureAdminUser } from '../helpers/admin-seed.js';
 
 const BASE_PATH = '/api/v1';
@@ -33,6 +36,8 @@ const middlewares = (app) => {
 const routes = (app) => {
   app.use(`${BASE_PATH}/auth`, authRoutes);
   app.use(`${BASE_PATH}/users`, userRoutes);
+  app.use(`${BASE_PATH}/opinions`, opinionRoutes);
+  app.use(`${BASE_PATH}/comments`, commentRoutes);
 
   app.get(`${BASE_PATH}/health`, (req, res) => {
     res.status(200).json({
@@ -52,6 +57,7 @@ export const initServer = async () => {
 
   try {
     await dbConnection();
+    await connectMongoDB();
     // Seed essential data (roles)
     const { seedRoles } = await import('../helpers/role-seed.js');
     await seedRoles();
