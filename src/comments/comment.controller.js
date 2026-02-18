@@ -4,7 +4,9 @@ import Opinion from '../opinions/opinion.model.js';
 // Crear comentario
 export const createComment = async (req, res) => {
   try {
+    // Datos requeridos para comentar
     const { opinionId, content } = req.body;
+    // userId y user vienen del middleware de autenticación
     const { userId, user } = req;
 
     // Verificar que la opinión existe
@@ -16,6 +18,7 @@ export const createComment = async (req, res) => {
       });
     }
 
+    // Se guarda el nombre del autor para mostrarlo sin consultas adicionales
     const comment = new Comment({
       opinionId,
       content,
@@ -43,6 +46,7 @@ export const createComment = async (req, res) => {
 export const getCommentsByOpinion = async (req, res) => {
   try {
     const { opinionId } = req.params;
+    // page y limit llegan como string desde query
     const { page = 1, limit = 20 } = req.query;
 
     // Verificar que la opinión existe
@@ -54,6 +58,7 @@ export const getCommentsByOpinion = async (req, res) => {
       });
     }
 
+    // Solo comentarios activos (soft delete)
     const filter = { opinionId, isActive: true };
 
     const comments = await Comment.find(filter)
@@ -113,6 +118,7 @@ export const getCommentById = async (req, res) => {
 export const updateComment = async (req, res) => {
   try {
     const { id } = req.params;
+    // userId viene del token
     const { userId } = req;
     const { content } = req.body;
 
@@ -133,6 +139,7 @@ export const updateComment = async (req, res) => {
       });
     }
 
+    // Solo actualiza si viene el campo content
     if (content !== undefined) {
       comment.content = content;
     }
@@ -157,6 +164,7 @@ export const updateComment = async (req, res) => {
 export const deleteComment = async (req, res) => {
   try {
     const { id } = req.params;
+    // userId viene del token
     const { userId } = req;
 
     const comment = await Comment.findById(id);
@@ -176,7 +184,7 @@ export const deleteComment = async (req, res) => {
       });
     }
 
-    // Soft delete
+    // Soft delete: se marca inactivo y no se elimina físicamente
     comment.isActive = false;
     await comment.save();
 

@@ -22,6 +22,7 @@ const ensureAdmin = async (req) => {
     req.user?.UserRoles?.map((ur) => ur.Role?.Name).filter(Boolean) ??
     (await getUserRoleNames(currentUserId));
   
+  // ADMIN_ROLE es el nombre normalizado del rol admin (ej. ADMIN_ROLE)
   return roles.includes(ADMIN_ROLE);
 };
 
@@ -36,10 +37,11 @@ export const updateUserRole = [
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
+    // userId del usuario al que se le cambiará el rol (viene por params)
     const { userId } = req.params;
     const { roleName } = req.body || {};
 
-    // Normalizar el nombre del rol a mayúsculas
+    // Normalizar el nombre del rol a mayúsculas para comparar con constantes
     const normalized = (roleName || '').trim().toUpperCase();
     
     // Validar que el rol sea uno de los permitidos
@@ -58,13 +60,14 @@ export const updateUserRole = [
         .json({ success: false, message: 'User not found' });
     }
 
-    // Actualizar el rol del usuario
+    // Actualizar el rol del usuario (solo un rol activo por usuario)
     const { updatedUser } = await setUserSingleRole(
       user,
       normalized,
       sequelize
     );
 
+    // buildUserResponse elimina campos sensibles (password, etc.)
     return res.status(200).json(buildUserResponse(updatedUser));
   }),
 ];
@@ -75,11 +78,13 @@ export const updateUserRole = [
 export const getUserRoles = [
   validateJWT, // Middleware para validar que el usuario esté autenticado
   asyncHandler(async (req, res) => {
+    // userId del usuario que se consulta (viene por params)
     const { userId } = req.params;
     
     // Obtener la lista de roles del usuario desde la base de datos
     const roles = await getUserRoleNames(userId);
     
+    // Se devuelve un arreglo simple de nombres de rol
     return res.status(200).json(roles);
   }),
 ];
@@ -95,6 +100,7 @@ export const getUsersByRole = [
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
+    // roleName viene por params (ej. /roles/ADMIN_ROLE)
     const { roleName } = req.params;
     
     // Normalizar el nombre del rol a mayúsculas
@@ -111,7 +117,7 @@ export const getUsersByRole = [
     // Obtener los usuarios con el rol especificado
     const users = await repoGetUsersByRole(normalized);
     
-    // Formatear la respuesta de los usuarios
+    // Formatear la respuesta de los usuarios sin datos sensibles
     const payload = users.map(buildUserResponse);
     
     return res.status(200).json(payload);
@@ -155,6 +161,7 @@ export const updateProfile = [
     try {
       // El userId viene del middleware validateJWT que decodifica el JWT
       const userId = req.userId;
+      // updateData incluye campos permitidos (nombre, apellido, username, password)
       const updateData = req.body;
 
       // Llamar al helper que actualiza el perfil con validaciones

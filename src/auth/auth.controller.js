@@ -14,6 +14,8 @@ import { asyncHandler } from '../../middlewares/server-genericError-handler.js';
 // Responde con estado 201 si es exitoso o 409 si el usuario ya existe
 export const register = asyncHandler(async (req, res) => {
   try {
+    // Aquí se reciben los datos básicos del usuario (nombre, correo, contraseña, etc.)
+    // req.file viene de middleware de subida (ej. multer), puede no existir
     // Obtener la imagen de perfil si fue subida en la petición
     const userData = {
       ...req.body,
@@ -51,6 +53,7 @@ export const register = asyncHandler(async (req, res) => {
 // Retorna un JWT si las credenciales son correctas
 export const login = asyncHandler(async (req, res) => {
   try {
+    // emailOrUsername permite iniciar sesión con correo o usuario
     const { emailOrUsername, password } = req.body;
     
     // Llamar al helper que valida las credenciales y genera el JWT
@@ -83,6 +86,7 @@ export const login = asyncHandler(async (req, res) => {
 // Si el token es válido, marca el email como verificado y activa la cuenta
 export const verifyEmail = asyncHandler(async (req, res) => {
   try {
+    // El token se envía en el body desde el enlace del correo
     const { token } = req.body;
     
     // Llamar al helper que valida el token y marca el email como verificado
@@ -116,6 +120,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 // Genera un nuevo token y envía un nuevo email
 export const resendVerification = asyncHandler(async (req, res) => {
   try {
+    // Email del usuario que solicita el reenvío
     const { email } = req.body;
     
     // Llamar al helper que reenvía el email de verificación
@@ -150,6 +155,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
 // Por seguridad, siempre retorna éxito aunque el usuario no exista
 export const forgotPassword = asyncHandler(async (req, res) => {
   try {
+    // Email del usuario que solicita recuperación
     const { email } = req.body;
     
     // Llamar al helper que genera el token y envía el email de recuperación
@@ -178,6 +184,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 // Valida el token y actualiza la contraseña en la base de datos
 export const resetPassword = asyncHandler(async (req, res) => {
   try {
+    // token y newPassword llegan desde el formulario de restablecimiento
     const { token, newPassword } = req.body;
     
     // Llamar al helper que valida el token y actualiza la contraseña
@@ -228,6 +235,7 @@ export const getProfile = asyncHandler(async (req, res) => {
 // Accesible solo para administradores
 // Retorna los datos públicos del usuario especificado
 export const getProfileById = asyncHandler(async (req, res) => {
+  // Este endpoint espera el userId en el body (no en params)
   const { userId } = req.body;
 
   // Validar que el userId fue proporcionado

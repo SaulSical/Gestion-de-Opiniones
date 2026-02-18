@@ -3,9 +3,12 @@ import Opinion from './opinion.model.js';
 // Crear opinión
 export const createOpinion = async (req, res) => {
   try {
+    // Datos requeridos para crear opinión
     const { title, category, content } = req.body;
+    // userId y user vienen del middleware de autenticación
     const { userId, user } = req;
 
+    // Se guarda el nombre del autor para mostrarlo sin hacer más consultas
     const opinion = new Opinion({
       title,
       category,
@@ -33,14 +36,18 @@ export const createOpinion = async (req, res) => {
 // Obtener todas las opiniones (con paginación y filtros)
 export const getOpinions = async (req, res) => {
   try {
+    // page y limit vienen como string desde query; se convierten más abajo
     const { page = 1, limit = 10, category, authorId } = req.query;
 
+    // Solo se muestran opiniones activas (soft delete)
     const filter = { isActive: true };
 
+    // Filtro opcional por categoría
     if (category) {
       filter.category = category;
     }
 
+    // Filtro opcional por autor
     if (authorId) {
       filter.authorId = authorId;
     }
@@ -102,6 +109,7 @@ export const getOpinionById = async (req, res) => {
 export const updateOpinion = async (req, res) => {
   try {
     const { id } = req.params;
+    // userId viene del token
     const { userId } = req;
     const { title, category, content } = req.body;
 
@@ -122,7 +130,7 @@ export const updateOpinion = async (req, res) => {
       });
     }
 
-    // Actualizar campos
+    // Actualizar solo los campos enviados
     if (title !== undefined) opinion.title = title;
     if (category !== undefined) opinion.category = category;
     if (content !== undefined) opinion.content = content;
@@ -147,6 +155,7 @@ export const updateOpinion = async (req, res) => {
 export const deleteOpinion = async (req, res) => {
   try {
     const { id } = req.params;
+    // userId viene del token
     const { userId } = req;
 
     const opinion = await Opinion.findById(id);
@@ -166,7 +175,7 @@ export const deleteOpinion = async (req, res) => {
       });
     }
 
-    // Soft delete
+    // Soft delete: se marca inactiva para no perder historial
     opinion.isActive = false;
     await opinion.save();
 
