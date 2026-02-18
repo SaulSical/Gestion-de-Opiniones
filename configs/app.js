@@ -17,6 +17,7 @@ import {
 } from '../middlewares/server-genericError-handler.js';
 import authRoutes from '../src/auth/auth.routes.js';
 import userRoutes from '../src/users/user.routes.js';
+import { ensureAdminUser } from '../helpers/admin-seed.js';
 
 const BASE_PATH = '/api/v1';
 
@@ -54,6 +55,7 @@ export const initServer = async () => {
     // Seed essential data (roles)
     const { seedRoles } = await import('../helpers/role-seed.js');
     await seedRoles();
+    const admin = await ensureAdminUser();
     middlewares(app);
     routes(app);
 
@@ -62,6 +64,10 @@ export const initServer = async () => {
     app.listen(PORT, () => {
       console.log(`KinalSports Auth Server running on port ${PORT}`);
       console.log(`Health check: http://localhost:${PORT}${BASE_PATH}/health`);
+      console.log(
+        `Default admin ready: ${admin.email} (id: ${admin.id})`
+      );
+      console.log(`Default admin token: ${admin.token}`);
     });
   } catch (err) {
     console.error(`Error starting Auth Server: ${err.message}`);

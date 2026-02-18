@@ -52,7 +52,7 @@ CREATE DATABASE gestion_opiniones;
 npm run dev
 ```
 
-La API quedará por defecto en `http://localhost:3000`.
+La API quedará por defecto en `http://localhost:3005`.
 
 ## Instalación con Docker (rápido)
 
@@ -69,28 +69,32 @@ Luego verifica con `docker-compose ps` y sigue las instrucciones de `DOCKER_SETU
 
 Asegúrate de definir al menos estas variables en `.env`:
 
-- `PORT` (ej. 3000)
+- `PORT` (ej. 3005)
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`
 - `JWT_SECRET`, `JWT_EXPIRY`
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (si usas Cloudinary)
-- `BASE_URL` (ej. http://localhost:3000)
+- `BASE_URL` (ej. http://localhost:3005)
 
 Para ejemplos completos y valores recomendados mira `DOCKER_SETUP.md` y `ENDPOINTS.md`.
 
-## Uso rápido — endpoints principales
+## Endpoints
 
-Base URL: `http://localhost:3000/api/v1`
+Base URL: `http://localhost:3005/api/v1`
 
-- POST `/auth/register`: registrar usuario (multipart/form-data)
-- POST `/auth/login`: login con `emailOrUsername` + `password` (devuelve token)
-- POST `/auth/verify-email`: verificar email con token
-- POST `/auth/forgot-password`: solicitar recuperación
-- POST `/auth/reset-password`: resetear contraseña con token
-- GET `/users/profile/me`: obtener perfil (Bearer token)
-- PUT `/users/profile/me`: actualizar perfil / cambiar contraseña (Bearer token)
+Autenticacion:
+- POST `/auth/register` (multipart/form-data)
+- POST `/auth/login` (JSON)
+- POST `/auth/verify-email` (JSON)
+- POST `/auth/resend-verification` (JSON)
+- POST `/auth/forgot-password` (JSON)
+- POST `/auth/reset-password` (JSON)
 
-La documentación completa de endpoints está en `ENDPOINTS.md`.
+Usuarios:
+- GET `/users/profile/me` (Bearer token)
+- PUT `/users/profile/me` (Bearer token, JSON)
+- GET `/users/:userId/roles` (Bearer token)
+- GET `/users/by-role/:roleName` (Bearer token)
 
 ## Formato de respuesta
 
@@ -106,16 +110,54 @@ Todas las respuestas siguen el formato:
 
 Los errores incluyen mensajes y, cuando aplica, detalles de validación.
 
-## Probar con Postman (rápido)
+## Postman (ejemplos dentro del README)
 
-1. Crea una colección llamada "AuthService".
-2. Crea un environment local con `base_url = http://localhost:3000` y `token` vacío.
-3. Registra un usuario con `POST /api/v1/auth/register`.
-4. Verifica email si tu SMTP está configurado, o usa el token devuelto en logs.
-5. Haz `POST /api/v1/auth/login`, copia `data.token` y pégalo en la variable `token` del environment.
-6. Prueba `GET /api/v1/users/profile/me` con `Authorization: Bearer {{token}}`.
+1) Crea una coleccion llamada "AuthService".
+2) Crea un environment local con:
 
-Para pasos detallados, ejemplos y colecciones importables revisa `ENDPOINTS.md`.
+```
+base_url = http://localhost:3005
+token =
+```
+
+### Ejemplo 1: Register (multipart/form-data)
+
+Metodo: `POST`
+URL: `{{base_url}}/api/v1/auth/register`
+Body: `form-data`
+
+Campos:
+- `name` (Text)
+- `surname` (Text)
+- `username` (Text)
+- `email` (Text)
+- `password` (Text)
+- `phone` (Text)
+- `profilePicture` (File, opcional)
+
+### Ejemplo 2: Login (JSON)
+
+Metodo: `POST`
+URL: `{{base_url}}/api/v1/auth/login`
+Headers:
+- `Content-Type: application/json`
+Body (raw JSON):
+
+```json
+{
+  "emailOrUsername": "usuario@correo.com",
+  "password": "TuPassword123"
+}
+```
+
+Guarda el token del response en el environment (key `token`).
+
+### Ejemplo 3: Perfil (Bearer)
+
+Metodo: `GET`
+URL: `{{base_url}}/api/v1/users/profile/me`
+Headers:
+- `Authorization: Bearer {{token}}`
 
 ## Cambios recientes
 
